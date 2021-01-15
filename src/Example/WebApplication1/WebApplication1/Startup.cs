@@ -14,7 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using SneddoBuilds.AspNetCore.AuthApi.Extensions;
+using SneddoBuilds.AspNetCore.JwtAuthApi.Extensions;
 using WebApplication1.Data;
 
 namespace WebApplication1

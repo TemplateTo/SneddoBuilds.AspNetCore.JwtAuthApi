@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SneddoBuilds.AspNetCore.AuthApi.Controllers;
-using SneddoBuilds.AspNetCore.AuthApi.Services;
+using SneddoBuilds.AspNetCore.JwtAuthApi.Controllers;
+using SneddoBuilds.AspNetCore.JwtAuthApi.Services;
 
 namespace WebApplication1.Controllers
 {
