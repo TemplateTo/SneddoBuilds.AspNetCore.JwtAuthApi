@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SneddoBuilds.AspNetCore.JwtAuthApi", "SneddoBuilds.AspNetCore.JwtAuthApi\SneddoBuilds.AspNetCore.JwtAuthApi.csproj", "{774BACCC-8404-4900-85F6-C03D6175CD3E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SneddoBuilds.AspNetCore.JwtAuthApi.Tests", "SneddoBuilds.AspNetCore.JwtAuthApi.Tests\SneddoBuilds.AspNetCore.JwtAuthApi.Tests.csproj", "{5743DE0E-C879-4A88-BB84-109F58DA6BBF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{774BACCC-8404-4900-85F6-C03D6175CD3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{774BACCC-8404-4900-85F6-C03D6175CD3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{774BACCC-8404-4900-85F6-C03D6175CD3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{774BACCC-8404-4900-85F6-C03D6175CD3E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5743DE0E-C879-4A88-BB84-109F58DA6BBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5743DE0E-C879-4A88-BB84-109F58DA6BBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5743DE0E-C879-4A88-BB84-109F58DA6BBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5743DE0E-C879-4A88-BB84-109F58DA6BBF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
