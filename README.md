@@ -19,6 +19,7 @@ Quickly add JWT authentication to your webapi project, extending the out of the 
       "ForgotPasswordSubject": "Update your password",
       "ForgotPasswordBody" : "Please use this code to reset your password: {{token}}"
     }``
+ https://github.com/sneddobuilds/SneddoBuilds.AspNetCore.JwtAuthApi/blob/master/src/Example/WebApplication1/WebApplication1/appsettings.json
     
 3. Add service reference to `AddSneddoJwtAuth<TUser,TRole>(configuration);` in `startup.cs`
 4. Add the security into Swagger Gen
@@ -27,4 +28,6 @@ Quickly add JWT authentication to your webapi project, extending the out of the 
 Done. 
 
 ## Example
-See the example web app here: 
+See the example web app here: https://github.com/sneddobuilds/SneddoBuilds.AspNetCore.JwtAuthApi/tree/master/src/Example/WebApplication1
+
+Search for TODO: within the example app to see where to make changes / additions.
