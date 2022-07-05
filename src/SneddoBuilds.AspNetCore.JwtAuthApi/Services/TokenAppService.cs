@@ -23,8 +23,9 @@ namespace SneddoBuilds.AspNetCore.JwtAuthApi.Services
         private readonly TokenValidationParameters _tokenValidationParameters;
         private readonly ILogger<TokenAppService<TUser, TRole>> _logger;
         private readonly JwtSecurityTokenHandler _tokenHandler;
+        private readonly IClaimsBuilder<TUser, string> _claimsBuilder;
 
-        public TokenAppService(JwtSecurityTokenHandler tokenHandler, UserManager<TUser> userManager, RoleManager<TRole> roleManager, JwtSettings jwtSettings, TokenValidationParameters tokenValidationParameters, ILogger<TokenAppService<TUser, TRole>> logger)
+        public TokenAppService(JwtSecurityTokenHandler tokenHandler, UserManager<TUser> userManager, RoleManager<TRole> roleManager, JwtSettings jwtSettings, TokenValidationParameters tokenValidationParameters, ILogger<TokenAppService<TUser, TRole>> logger, IClaimsBuilder<TUser, string> claimsBuilder)
         {
             _tokenHandler = tokenHandler;
             _userManager = userManager;
@@ -32,9 +33,10 @@ namespace SneddoBuilds.AspNetCore.JwtAuthApi.Services
             _jwtSettings = jwtSettings;
             _tokenValidationParameters = tokenValidationParameters;
             _logger = logger;
+            _claimsBuilder = claimsBuilder;
         }
 
-        public async Task<AuthenticationResult> GenerateAuthenticationResultForUserAsync(TUser user, string jti = null)
+        public async Task<AuthenticationResult> GenerateAuthenticationResultForUserAsync(TUser user, string companyId = null, string jti = null)
         {
             var key = Encoding.ASCII.GetBytes(_jwtSettings.Secret);
             var refreshKey = Encoding.ASCII.GetBytes(_jwtSettings.RefreshSecret);
@@ -47,6 +49,17 @@ namespace SneddoBuilds.AspNetCore.JwtAuthApi.Services
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim("id", user.Id)
             };
+            
+            if (!string.IsNullOrEmpty(companyId))
+            {
+                claims.Add(new Claim("CompanyId", companyId));
+            }
+
+            var additionalClaims = _claimsBuilder.Build(user, companyId);
+
+            var additionalUserClaims = additionalClaims as Claim[] ?? additionalClaims.ToArray();
+            if(additionalUserClaims.Length > 0)
+                claims.AddRange(additionalUserClaims);
 
             var userClaims = await _userManager.GetClaimsAsync(user);
             if(userClaims!= null && userClaims.Any())

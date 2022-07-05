@@ -16,7 +16,7 @@ namespace SneddoBuilds.AspNetCore.JwtAuthApi.Models.Requests
     public class UserParameter
     {
         public string Name { get; set; }
-        public object Value { get; set; }
+        public string Value { get; set; }
     }
 
 }

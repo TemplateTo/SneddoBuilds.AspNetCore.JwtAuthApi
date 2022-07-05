@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <PackageVersion>0.0.3</PackageVersion>
+        <PackageVersion>1.0.8</PackageVersion>
         <Title>JWTAuthApi for .net core</Title>
         <Authors>SneddoBuilds</Authors>
         <Description>Makes use of Identity to give a simple JWT controller for web api. </Description>
@@ -20,11 +20,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.2" />
-      <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="5.0.2" />
-      <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="5.0.2" />
-      <PackageReference Include="SendGrid" Version="9.22.0" />
-      <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="5.6.3" />
+      <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.*" />
+      <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="5.0.*" />
+      <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="5.0.*" />
+      <PackageReference Include="SendGrid" Version="9.24.*" />
+      <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.1.4" />
       <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
     </ItemGroup>
 

@@ -73,11 +73,11 @@ namespace SneddoBuilds.AspNetCore.JwtAuthApi.Tests.Services
                 ValidateLifetime = true
             };
 
-            _tokenAppServiceMock.Setup(x => x.GenerateAuthenticationResultForUserAsync(It.IsAny<IdentityUser>(), It.IsAny<string>()))
+            _tokenAppServiceMock.Setup(x => x.GenerateAuthenticationResultForUserAsync(It.IsAny<IdentityUser>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(() => new AuthenticationResult
                     {Success = true, Token = "standardtoken", RefreshToken = "refreshToken"});
             
-            _appUsertokenAppServiceMock.Setup(x => x.GenerateAuthenticationResultForUserAsync(It.IsAny<AppUser>(), It.IsAny<string>()))
+            _appUsertokenAppServiceMock.Setup(x => x.GenerateAuthenticationResultForUserAsync(It.IsAny<AppUser>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(() => new AuthenticationResult
                     {Success = true, Token = "standardtoken", RefreshToken = "refreshToken"});
         }
@@ -172,7 +172,7 @@ namespace SneddoBuilds.AspNetCore.JwtAuthApi.Tests.Services
                 _emailSender.Object
             );
 
-            var result = await identityAppService.RegisterAsync("test@test.com", "Pa55w0rd", new []{ new KeyValuePair<string, object>("FullName", "test user")});
+            var result = await identityAppService.RegisterAsync("test@test.com", "Pa55w0rd", null,new []{ new KeyValuePair<string, string>("FullName", "test user")});
             
             Assert.True(result.Success);
             Assert.NotNull(appUser);
@@ -535,7 +535,7 @@ namespace SneddoBuilds.AspNetCore.JwtAuthApi.Tests.Services
             Assert.True(result.Success);
             _identityUserManagerMock.Verify(m=> m.ResetPasswordAsync(It.IsAny<IdentityUser>(), It.IsAny<string>(), It.IsAny<string>()), 
                 Times.Once);
-            _tokenAppServiceMock.Verify(m => m.GenerateAuthenticationResultForUserAsync(It.IsAny<IdentityUser>(), null),
+            _tokenAppServiceMock.Verify(m => m.GenerateAuthenticationResultForUserAsync(It.IsAny<IdentityUser>(), null, null),
                 Times.Once);
         }
         
@@ -559,7 +559,7 @@ namespace SneddoBuilds.AspNetCore.JwtAuthApi.Tests.Services
             Assert.True(result.Success);
             _identityUserManagerMock.Verify(m=> m.ResetPasswordAsync(It.IsAny<IdentityUser>(), It.IsAny<string>(), It.IsAny<string>()), 
                 Times.Never);
-            _tokenAppServiceMock.Verify(m => m.GenerateAuthenticationResultForUserAsync(It.IsAny<IdentityUser>(), null),
+            _tokenAppServiceMock.Verify(m => m.GenerateAuthenticationResultForUserAsync(It.IsAny<IdentityUser>(), null, null),
                 Times.Never);
         }
         

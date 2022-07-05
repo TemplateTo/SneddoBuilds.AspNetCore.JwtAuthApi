@@ -16,6 +16,7 @@ namespace SneddoBuilds.AspNetCore.JwtAuthApi.Tests.Services
 {
     public class TokenAppServiceTest
     {
+        private Mock<IClaimsBuilder<IdentityUser, string>> _claimsBuilder = new Mock<IClaimsBuilder<IdentityUser, string>>();
         private Mock<UserManager<IdentityUser>> _identityUserManagerMock = MockHelpers.MockUserManager<IdentityUser>();
         private Mock<RoleManager<IdentityRole>> _identityRoleManagerMock = MockHelpers.MockRoleManager<IdentityRole>();
         private JwtSettings _jwtSettings;
@@ -69,7 +70,8 @@ namespace SneddoBuilds.AspNetCore.JwtAuthApi.Tests.Services
                 _identityRoleManagerMock.Object,
                 _jwtSettings,
                 _tokenValidationParameters,
-                _loggerMock.Object);
+                _loggerMock.Object,
+                _claimsBuilder.Object);
 
             var jti = Guid.NewGuid().ToString();
             var result = await tokenAppService.GenerateAuthenticationResultForUserAsync(_identityUser, jti);
@@ -99,7 +101,8 @@ namespace SneddoBuilds.AspNetCore.JwtAuthApi.Tests.Services
                 _identityRoleManagerMock.Object,
                 _jwtSettings,
                 _tokenValidationParameters,
-                _loggerMock.Object);
+                _loggerMock.Object,
+                _claimsBuilder.Object);
 
             var jti = Guid.NewGuid().ToString();
             var result = await tokenAppService.GenerateAuthenticationResultForUserAsync(_identityUser, jti);

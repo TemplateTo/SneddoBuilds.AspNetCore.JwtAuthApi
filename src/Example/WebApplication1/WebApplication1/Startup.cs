@@ -37,11 +37,22 @@ namespace WebApplication1
 
             services.AddControllers();
             
+            services.AddCors(o => o.AddPolicy("AllowAll", builder =>
+            {
+                builder.SetIsOriginAllowed(_ => true)
+                    .AllowAnyMethod()
+                    .AllowCredentials()
+                    .AllowAnyHeader();
+            }));
+            
             //TODO: 01 -- Add configuration to appsettings (go look at file)
             //TODO: 02 -- Add service reference to AddSneddoJwtAuth<TUser,TRole>(configuration);
             services.AddSneddoJwtAuth<IdentityUser,IdentityRole, DefaultDataContext>(Configuration);
-
-            services.AddSwaggerGen(c =>
+			
+			//Install package NSwag.AspNetCore
+			services.AddOpenApiDocument();
+            
+			services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo {Title = "WebApplication1", Version = "v1"});
                 //TODO: 03 -- Add the security into Swagger
@@ -55,21 +66,23 @@ namespace WebApplication1
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseSwagger();
+                app.UseOpenApi();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "WebApplication1 v1"));
             }
             app.UseHttpsRedirection();
 
+            app.UseCors("AllowAll");
+            
             app.UseRouting();
 
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 
-            SeedUser(app);
+            //await SeedUser(app);
         }
         
-        private static void SeedUser(IApplicationBuilder app)
+        private static async Task SeedUser(IApplicationBuilder app)
         {
             using (var serviceScope = app.ApplicationServices
                 .GetRequiredService<IServiceScopeFactory>()
@@ -79,21 +92,21 @@ namespace WebApplication1
                 {
                     using (var userManager = serviceScope.ServiceProvider.GetService<UserManager<IdentityUser>>())
                     {
-                        if (!userManager.Users.Any(x => x.UserName == "test@test.test"))
+                        if (!userManager.Users.Any(x => x.UserName == "test@test.com"))
                         {
                             var user = new IdentityUser
                             {
-                                Email = "test@test.test",
-                                UserName = "test@test.test",
-                                NormalizedEmail = "test@test.test",
+                                Email = "test@test.com",
+                                UserName = "test@test.com",
+                                NormalizedEmail = "test@test.com",
                                 EmailConfirmed = true,
                                 LockoutEnabled = false,
                                 SecurityStamp = Guid.NewGuid().ToString()
                             };
-                            userManager.CreateAsync(user, "5n3dd0Bu1ld5");
+                            await userManager.CreateAsync(user, "5n3dd0Bu!ld5");
                         }
                     }
-                    context.SaveChangesAsync();
+                    await context.SaveChangesAsync();
                 }
             }
         }

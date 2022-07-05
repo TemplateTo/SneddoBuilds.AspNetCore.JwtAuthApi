@@ -24,6 +24,7 @@ namespace SneddoBuilds.AspNetCore.JwtAuthApi.Extensions
                     Type = ReferenceType.SecurityScheme
                 }}, new List<string>()} 
             });
+            
         }
     }
 }

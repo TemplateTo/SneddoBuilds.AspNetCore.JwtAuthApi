@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SneddoBuilds.AspNetCore.JwtAuthApi.Controllers;
 using SneddoBuilds.AspNetCore.JwtAuthApi.Services;
@@ -13,10 +14,12 @@ namespace WebApplication1.Controllers
     public class AuthController : AuthControllerBase
     {
         private readonly IIdentityAppService _identityAppService;
+        private readonly IHttpContextAccessor _contextAccessor;
 
-        public AuthController(IIdentityAppService identityAppService) : base(identityAppService)
+        public AuthController(IIdentityAppService identityAppService, IHttpContextAccessor contextAccessor) : base(identityAppService, contextAccessor)
         {
             _identityAppService = identityAppService;
+            _contextAccessor = contextAccessor;
         }
     }
 }

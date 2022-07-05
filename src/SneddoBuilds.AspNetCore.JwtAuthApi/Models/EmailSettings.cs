@@ -7,5 +7,8 @@
         public string ForgotPasswordSubject { get; set; }
         //{{Token}} can be used within the body text. Will be replaced with the reset token before sending
         public string ForgotPasswordBody { get; set; }
+        
+        public string SignupSubject { get; set; }
+        public string SignupBody { get; set; }
     }
 }

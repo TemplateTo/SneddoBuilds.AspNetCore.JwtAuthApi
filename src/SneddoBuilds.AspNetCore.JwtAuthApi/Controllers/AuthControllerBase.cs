@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,19 +15,22 @@ namespace SneddoBuilds.AspNetCore.JwtAuthApi.Controllers
     //[Route("api/Auth/[action]")]
     //[ApiController]
     //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public class AuthControllerBase : ControllerBase
+    public class AuthControllerBase<TUser> : ControllerBase
     {
-        private readonly IIdentityAppService _identityAppService;
-        
-        public AuthControllerBase(IIdentityAppService identityAppService)
+        private readonly IIdentityAppService<TUser> _identityAppService;
+        private readonly IHttpContextAccessor _contextAccessor;
+
+        public AuthControllerBase(IIdentityAppService<TUser> identityAppService, IHttpContextAccessor contextAccessor)
         {
             _identityAppService = identityAppService;
+            _contextAccessor = contextAccessor;
         }
         
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public virtual async Task<ActionResult<AuthSuccessResponse>> Create([FromBody] UserRegistrationRequest request)
+        [AllowAnonymous]
+        public virtual async Task<ActionResult<UserRegistrationSuccessResponse<TUser>>> Create([FromBody] UserRegistrationRequest request)
         {
             if (!ModelState.IsValid)
             {
@@ -37,9 +41,9 @@ namespace SneddoBuilds.AspNetCore.JwtAuthApi.Controllers
             }
 
             var userParamKeyValuePairs =
-                request.UserParameters.Select(x => new KeyValuePair<string, object>(x.Name, x.Value));
+                request.UserParameters.Select(x => new KeyValuePair<string, string>(x.Name, x.Value));
             
-            var authResponse = await _identityAppService.RegisterAsync(request.Email, request.Password, userParamKeyValuePairs.ToArray());
+            var authResponse = await _identityAppService.RegisterAsync(request.Email, request.Password, null, userParamKeyValuePairs.ToArray());
 
             if (!authResponse.Success)
             {
@@ -49,10 +53,11 @@ namespace SneddoBuilds.AspNetCore.JwtAuthApi.Controllers
                 });
             }
             
-            return Ok(new AuthSuccessResponse
+            return Ok(new UserRegistrationSuccessResponse<TUser>
             {
                 Token = authResponse.Token,
-                RefreshToken = authResponse.RefreshToken
+                RefreshToken = authResponse.RefreshToken,
+                User = authResponse.User
             });
         }
         
@@ -71,6 +76,13 @@ namespace SneddoBuilds.AspNetCore.JwtAuthApi.Controllers
                     Errors = authResponse.Errors
                 });
             }
+            
+            _contextAccessor.HttpContext.Response.Cookies.Append("jwt", authResponse.Token, new CookieOptions
+            {
+                HttpOnly = true,
+                SameSite = SameSiteMode.None,
+                Secure = true
+            });
             
             return Ok(new AuthSuccessResponse
             {
@@ -144,6 +156,17 @@ namespace SneddoBuilds.AspNetCore.JwtAuthApi.Controllers
                 RefreshToken = resetPassword.RefreshToken
             });
         }
+        
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public virtual ActionResult<AuthSuccessResponse> Logout()
+        {
+            _contextAccessor.HttpContext.Response.Cookies.Delete("jwt");
+            
+            return Ok();
+        }
+        
         
     }
 }

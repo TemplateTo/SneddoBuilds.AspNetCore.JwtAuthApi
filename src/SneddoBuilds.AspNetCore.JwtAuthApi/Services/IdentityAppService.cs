@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
@@ -35,7 +39,7 @@ namespace SneddoBuilds.AspNetCore.JwtAuthApi.Services
         }
     }
     
-    public class IdentityAppService<TUser, TRole> : IIdentityAppService
+    public class IdentityAppService<TUser, TRole> : IIdentityAppService<TUser>
             where TUser : IdentityUser
             where TRole : IdentityRole
         {
@@ -59,13 +63,13 @@ namespace SneddoBuilds.AspNetCore.JwtAuthApi.Services
             _emailSender = emailSender;
         }
         
-        public async Task<AuthenticationResult> RegisterAsync(string email, string password, params KeyValuePair<string,object>[] userParameters)
+        public async Task<RegisterResult<TUser>> RegisterAsync(string email, string password, string companyId = null, params KeyValuePair<string,string>[] userParameters)
         {
             var existingUser = await _userManager.FindByEmailAsync(email);
             
             if (existingUser != null)
             {
-                return new AuthenticationResult
+                return new RegisterResult<TUser>
                 {
                     Errors = new[] {"User with this email address already exists"}
                 };
@@ -80,25 +84,67 @@ namespace SneddoBuilds.AspNetCore.JwtAuthApi.Services
 
             if (!createdUser.Succeeded)
             {
-                return new AuthenticationResult
+                return new RegisterResult<TUser>
                 {
                     Errors = createdUser.Errors.Select(x => x.Description)
                 };
             }
             
-            return await _tokenAppService.GenerateAuthenticationResultForUserAsync(newUser);
+            var authResponse =await _tokenAppService.GenerateAuthenticationResultForUserAsync(newUser, companyId);
+            var result = new RegisterResult<TUser>
+            {
+                Errors = authResponse.Errors,
+                Success = authResponse.Success,
+                Token = authResponse.Token,
+                RefreshToken = authResponse.RefreshToken,
+                User = newUser
+            };
+
+            return result;
         }
 
-        private void MapUserParameters(TUser user, KeyValuePair<string, object>[] userParameters)
+        public async Task<AuthenticationResult> AddClaimsAsync(string email, KeyValuePair<string, string>[] claims)
         {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                return new AuthenticationResult
+                {
+                    Errors = new[] {"User does not exist"}
+                };
+            }
+
+            if (claims.Length > 0)
+            {
+                for (int i = 0; i < claims.Length; i++)
+                {
+
+                    await _userManager.AddClaimAsync(user, new Claim(claims[i].Key, claims[i].Value));
+                }
+            }
+            
+            //Returns a new token with the added claims.
+            return await _tokenAppService.GenerateAuthenticationResultForUserAsync(user);
+        }
+
+        private void MapUserParameters(TUser user, KeyValuePair<string, string>[] userParameters)
+        {
+            if (userParameters == null || userParameters.Length == 0)
+                return;
+            
             var userType = user.GetType();
             foreach (var parameter in userParameters)
             {
-                userType.GetProperty(parameter.Key)?.SetValue(user,parameter.Value);
+                var propType = userType.GetProperty(parameter.Key)?.PropertyType;
+                var converter = TypeDescriptor.GetConverter(propType);
+                var convertedObject = converter.ConvertFromString(parameter.Value);
+                
+                var prop = userType.GetProperty(parameter.Key);
+                prop.SetValue(user, converter.ConvertFromString(parameter.Value));
             }
         }
         
-        public async Task<AuthenticationResult> LoginAsync(string email, string password)
+        public async Task<AuthenticationResult> LoginAsync(string email, string password, string companyId = null)
         {
             var user = await _userManager.FindByEmailAsync(email);
 
@@ -120,10 +166,10 @@ namespace SneddoBuilds.AspNetCore.JwtAuthApi.Services
                 };
             }
             
-            return await _tokenAppService.GenerateAuthenticationResultForUserAsync(user);
+            return await _tokenAppService.GenerateAuthenticationResultForUserAsync(user, companyId);
         }
 
-        public async Task<AuthenticationResult> RefreshTokenAsync(string token, string refreshToken)
+        public async Task<AuthenticationResult> RefreshTokenAsync(string token, string refreshToken, string companyId = null)
         {
             var validatedToken = _tokenAppService.GetPrincipalFromToken(token);
 
@@ -170,10 +216,10 @@ namespace SneddoBuilds.AspNetCore.JwtAuthApi.Services
             //Remove the Refresh token as its now been used.
             await _userManager.RemoveAuthenticationTokenAsync(user, "SneddoBuilds.AspNetCore.JwtAuth", "RefreshToken");
             
-            return await _tokenAppService.GenerateAuthenticationResultForUserAsync(user);
+            return await _tokenAppService.GenerateAuthenticationResultForUserAsync(user, companyId);
         }
 
-        public async Task<AuthenticationResult> ForgottenPasswordAsync(string email)
+        public async Task<AuthenticationResult> ForgottenPasswordAsync(string email, string subject ="", string body="")
         {
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
@@ -192,12 +238,23 @@ namespace SneddoBuilds.AspNetCore.JwtAuthApi.Services
             _logger.LogDebug($"Reset Token: {resetToken}");
             
             //email reset token
-            var body = _jwtSettings.EmailSettings.ForgotPasswordBody.Replace("{{token}}", resetToken);
-            
+            string emailSubject = string.IsNullOrEmpty(subject)
+                ? _jwtSettings.EmailSettings.ForgotPasswordSubject
+                : subject;
+            string emailBody;
+            if (string.IsNullOrEmpty(body))
+            {
+                emailBody = _jwtSettings.EmailSettings.ForgotPasswordBody.Replace("{{token}}", resetToken);
+            }
+            else
+            {
+                emailBody = body.Replace("{{token}}", resetToken);
+            }
+
             await _emailSender.SendEmailAsync(
                 user.Email,
-                _jwtSettings.EmailSettings.ForgotPasswordSubject,
-                body);
+                emailSubject,
+                emailBody);
             
             return new AuthenticationResult
             {
